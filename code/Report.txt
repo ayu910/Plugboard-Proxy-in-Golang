@@ -1,0 +1,42 @@
+Ayush Sharma
+SBU ID : 113263475
+CSE508: Network Security, Spring 2021
+Homework 4: Plugboard Proxy
+
+
+Implementation Logic :
+1. Flag parsing is used to parse all the arguments.
+2. If a listenport is provided then go in reverse proxy mode else work in client mode.
+3. In client mode
+	1. Open a TCP connection
+	2. Get password from file passed as argument and send to encrypter
+	3. Get the input from stdin and pass to encryter
+	4. Encrypter will encrypt the text and send output.
+	5. Pass this output to destination:port provided in command line arguments.
+4. In Reverse Proxy mode
+	1. Get password from file passed as argument and send to encrypter
+	2. Open a listening port and run for loop to accept multiple sclient connections
+	3. If connection is found, start 2 way communication.
+	4. First read buffer sent from client, decrypt it, and send to destination:port specified in arguments.
+	5. Second, get reponse from the destination and forward that to client.
+
+Encrypter Logic:
+1. Salt is hardcoded.
+2. Nonce is generated using the data provided in stdin (because it should be unique for msg from different clients)
+3. Generate key using pbkdf2
+4. Get ciphertext using gcm.Seal
+
+Decrypter Logic:
+1. Salt is hardcoded.
+2. Nonce is generated using the data provided in read buffer from clients (because it should be unique for msg from different clients)
+3. Generate key using pbkdf2
+4. Get plaintext using gcm.Open
+
+
+To Run Use below Testcase :
+0) In first terminal window
+python3 -m http.server 7777
+1) In second terminal window
+./pbproxy -l 5000 -p pass localhost 7777
+2) In third terminal window
+./pbproxy -p pass localhost 5000
